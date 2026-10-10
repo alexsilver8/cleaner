@@ -1,0 +1,6 @@
+# Check out text files with LF line endings on every OS, including Windows. CRLF would shift the
+# columns the tests expect and doesn't match the code style (see .editorconfig).
+* text=auto eol=lf
+
+# The bundled action is built by `pnpm build`. Hide it from diffs and language stats.
+dist/** -diff linguist-generated=true

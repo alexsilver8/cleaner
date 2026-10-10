@@ -1,0 +1,22 @@
+name: Cleaner
+description: Checks code against the conventions Prettier and TypeScript don't enforce, and explains how to fix each problem.
+author: Alexander Silver
+
+branding:
+    icon: check-square
+    color: green
+
+inputs:
+    paths:
+        description: Files and folders to check, separated by spaces or new lines. Folders are searched, skipping node_modules and dot folders.
+        required: false
+        default: src
+
+outputs:
+    problems:
+        description: How many problems were found.
+
+# Runs the bundled script on the runner's own Node.js, so there's nothing to install first.
+runs:
+    using: node24
+    main: dist/cleaner.cjs

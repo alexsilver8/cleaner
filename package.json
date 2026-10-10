@@ -1,0 +1,39 @@
+{
+	"name": "@alexsilver8/cleaner",
+	"version": "1.0.0",
+	"description": "Checks code against the conventions Prettier and TypeScript don't enforce. Runs as a GitHub Action or a command.",
+	"author": "Alexander Silver",
+	"homepage": "https://github.com/alexsilver8/cleaner",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/alexsilver8/cleaner.git"
+	},
+	"bugs": "https://github.com/alexsilver8/cleaner/issues",
+	"license": "MIT",
+	"private": true,
+	"type": "module",
+	"bin": {
+		"cleaner": "dist/cleaner.cjs"
+	},
+	"files": [
+		"dist",
+		"action.yml"
+	],
+	"scripts": {
+		"build": "esbuild src/bin.mjs --bundle --platform=node --target=node22 --format=cjs --minify --legal-comments=eof --banner:js=\"#!/usr/bin/env node\" --outfile=dist/cleaner.cjs",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"format": "prettier --write ."
+	},
+	"engines": {
+		"node": ">=22.12"
+	},
+	"packageManager": "pnpm@12.10.1",
+	"devDependencies": {
+		"esbuild": "^0.28.2",
+		"picocolors": "^1.1.1",
+		"prettier": "^3.9.9",
+		"typescript": "^6.0.3",
+		"vitest": "~4.1.11"
+	}
+}

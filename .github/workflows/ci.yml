@@ -1,0 +1,85 @@
+name: CI
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+    # Tests on every OS the action can run on, since paths are written differently on Windows.
+    test:
+        name: test (${{ matrix.os }})
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ubuntu-latest, windows-latest, macos-latest]
+        steps:
+            - uses: actions/checkout@v7
+              with:
+                  persist-credentials: false
+            - uses: pnpm/action-setup@v6
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: 24
+                  cache: pnpm
+            - run: pnpm install --frozen-lockfile
+            - run: pnpm build
+            # Other repositories run dist/cleaner.cjs as it's committed, so it has to match src/.
+            - name: Check dist is up to date
+              if: runner.os == 'Linux'
+              run: |
+                  if ! git diff --quiet -- dist; then
+                    echo "::error file=dist/cleaner.cjs,title=dist is out of date::Run pnpm build and commit dist/cleaner.cjs."
+                    exit 1
+                  fi
+            - run: pnpm test
+            - name: Check formatting
+              if: runner.os == 'Linux'
+              run: pnpm exec prettier --check .
+
+    # Uses the action from this commit the way other repositories do.
+    self-test:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v7
+              with:
+                  persist-credentials: false
+            - uses: ./
+              id: cleaner
+              with:
+                  paths: tests/fixtures/clean
+            - name: Check the output
+              env:
+                  PROBLEMS: ${{ steps.cleaner.outputs.problems }}
+              run: |
+                  if [ "$PROBLEMS" != "0" ]; then
+                    echo "::error::Expected the problems output to be 0, got '$PROBLEMS'."
+                    exit 1
+                  fi
+
+    # One stable check name for the branch ruleset to require.
+    # Add any new job to `needs` and it becomes required automatically.
+    ci:
+        name: ci
+        if: always()
+        needs: [test, self-test]
+        runs-on: ubuntu-latest
+        steps:
+            - name: Verify all jobs passed
+              env:
+                  FAILED: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
+              run: |
+                  if [ "$FAILED" = "true" ]; then
+                    echo "::error::One or more CI jobs failed."
+                    exit 1
+                  fi
+                  echo "All CI jobs passed."
