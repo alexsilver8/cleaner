@@ -1,6 +1,6 @@
 {
 	"name": "@alexsilver8/cleaner",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"description": "Checks code against the conventions Prettier and TypeScript don't enforce. Runs as a GitHub Action or a command.",
 	"author": "Alexander Silver",
 	"homepage": "https://github.com/alexsilver8/cleaner",
