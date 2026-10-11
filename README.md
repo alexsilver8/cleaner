@@ -73,6 +73,7 @@ release. Run `pnpm update @alexsilver8/cleaner` after a release to pick up new r
 | Rule                     | What it checks                                                                                                                             |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | `no-types-in-components` | A component file (a `.tsx` file named after its folder, like `card/card.tsx`) declares no interfaces or types. They go in `card.types.ts`. |
+| `no-parent-imports`      | A `.ts` or `.tsx` file doesn't import or re-export from `../`. Use a path alias from `tsconfig.json` instead; `./` is fine.                |
 
 ## Adding a rule
 

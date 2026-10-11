@@ -14,7 +14,8 @@ export const DEFAULT_PATH = 'src'
 const normalize = (path) => relative(process.cwd(), resolve(path)).split(sep).join('/')
 
 /**
- * Checks one file's source against every rule that applies to it.
+ * Checks one file's source against every rule that applies to it. Problems are in the order they
+ * appear in the file, whichever rule found them.
  *
  * @param {string} path the file's path, with forward slashes
  * @param {string} text the file's contents
@@ -31,15 +32,17 @@ export function checkFile(path, text) {
 		ts.ScriptKind.TSX
 	)
 
-	return rules.flatMap((rule) =>
-		rule.check(sourceFile, path).map(({ node, message }) => {
-			const { line, character } = sourceFile.getLineAndCharacterOfPosition(
-				node.getStart(sourceFile)
-			)
+	return rules
+		.flatMap((rule) =>
+			rule.check(sourceFile, path).map(({ node, message }) => {
+				const { line, character } = sourceFile.getLineAndCharacterOfPosition(
+					node.getStart(sourceFile)
+				)
 
-			return { path, line: line + 1, column: character + 1, rule: rule.id, message }
-		})
-	)
+				return { path, line: line + 1, column: character + 1, rule: rule.id, message }
+			})
+		)
+		.sort((a, b) => a.line - b.line || a.column - b.column)
 }
 
 /**
