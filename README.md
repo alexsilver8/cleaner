@@ -2,8 +2,8 @@
 
 Checks code against the conventions Prettier and TypeScript don't enforce, and says how to fix
 each problem it finds. One copy of the rules, shared by
-[OpenPaste](https://github.com/alexsilver8/openpaste) and
-[OpenSEO](https://github.com/alexsilver8/openseo), that runs as a GitHub Action in CI and as
+[OpenPaste](https://github.com/alexsilver8/open-paste) and
+[OpenSEO](https://github.com/alexsilver8/open-seo), that runs as a GitHub Action in CI and as
 `pnpm cleaner` on your machine.
 
 ```
