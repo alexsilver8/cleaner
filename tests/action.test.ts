@@ -39,16 +39,16 @@ describe('the bundled action', () => {
 		const run = runAction('tests/fixtures/clean')
 
 		expect(run.status).toBe(0)
-		expect(run.stdout).toBe('✔ No problems in 2 files.\n')
+		expect(run.stdout).toBe('✔ No problems in 3 files.\n')
 		expect(run.output).toBe('problems=0\n')
-		expect(run.summary).toContain('No problems in 2 files.')
+		expect(run.summary).toContain('No problems in 3 files.')
 	})
 
 	it('fails, annotates each problem and fills in the summary', () => {
 		const run = runAction('tests/fixtures/clean\ntests/fixtures/dirty')
 
 		expect(run.status).toBe(1)
-		expect(run.stdout).toContain('✖ 3 problems in 2 files (4 files checked)')
+		expect(run.stdout).toContain('✖ 3 problems in 2 files (7 files checked)')
 		expect(run.stdout.split('\n').filter((line) => line.startsWith('::error '))).toEqual([
 			expect.stringMatching(
 				/^::error file=tests\/fixtures\/dirty\/components\/card\/card\.tsx,line=3,col=1,title=no-types-in-components::interface CardProps: /
@@ -77,7 +77,7 @@ describe('the bundled action', () => {
 		const run = runAction(undefined, ['tests/fixtures/dirty/components/menu'])
 
 		expect(run.status).toBe(1)
-		expect(run.stdout).toContain('✖ 1 problem in 1 file (1 file checked)')
+		expect(run.stdout).toContain('✖ 1 problem in 1 file (2 files checked)')
 	})
 })
 

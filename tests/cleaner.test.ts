@@ -30,12 +30,13 @@ describe('collectFiles', () => {
 		expect(collectFiles([CLEAN, `${DIRTY}/components/menu/menu.tsx`]).sort()).toEqual([
 			`${CLEAN}/components/card/card.tsx`,
 			`${CLEAN}/components/card/card.types.ts`,
+			`${CLEAN}/components/card/index.ts`,
 			`${DIRTY}/components/menu/menu.tsx`
 		])
 	})
 
 	it('lists a file once when paths overlap', () => {
-		expect(collectFiles([CLEAN, `${CLEAN}/components/card/card.tsx`])).toHaveLength(2)
+		expect(collectFiles([CLEAN, `${CLEAN}/components/card/card.tsx`])).toHaveLength(3)
 	})
 
 	it('skips node_modules and dot folders', () => {
