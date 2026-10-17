@@ -14,8 +14,7 @@ export const DEFAULT_PATH = 'src'
 const normalize = (path) => relative(process.cwd(), resolve(path)).split(sep).join('/')
 
 /**
- * Checks one file's source against every rule that applies to it. Problems are in the order they
- * appear in the file, whichever rule found them.
+ * Checks one file's source against every rule that applies to it.
  *
  * @param {string} path the file's path, with forward slashes
  * @param {string} text the file's contents
@@ -24,20 +23,21 @@ const normalize = (path) => relative(process.cwd(), resolve(path)).split(sep).jo
 export function checkFile(path, text) {
 	const rules = RULES.filter((rule) => rule.appliesTo(path))
 	if (!rules.length) return []
+	// Only .tsx files can hold JSX. Parsing a .ts file as TSX would read `<T>(x: T) => x` as JSX.
 	const sourceFile = ts.createSourceFile(
 		path,
 		text,
 		ts.ScriptTarget.Latest,
 		true,
-		ts.ScriptKind.TSX
+		path.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS
 	)
 
 	return rules
 		.flatMap((rule) =>
 			rule.check(sourceFile, path).map(({ node, message }) => {
-				const { line, character } = sourceFile.getLineAndCharacterOfPosition(
-					node.getStart(sourceFile)
-				)
+				// A problem with the whole file is reported at its first line.
+				const start = node === sourceFile ? 0 : node.getStart(sourceFile)
+				const { line, character } = sourceFile.getLineAndCharacterOfPosition(start)
 
 				return { path, line: line + 1, column: character + 1, rule: rule.id, message }
 			})

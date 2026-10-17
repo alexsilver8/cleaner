@@ -18,6 +18,37 @@ no-types-in-components
 ✖ 2 problems in 1 file (194 files checked)
 ```
 
+## What it checks
+
+Cleaner checks `.ts` and `.tsx` files, but not `.d.ts` files. Most rules are about component
+files: `.tsx` files named after their folder, like `card/card.tsx` or `Card/Card.tsx`. The
+component's name comes from the file, so `top-bar.tsx` is `TopBar`. Other files in the folder,
+like `card/index.tsx` or `card/card-header.tsx`, aren't component files.
+
+### Component files
+
+| Rule                       | What it checks                                                                                                                                                                                                    |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `no-types-in-components`   | No interfaces or type aliases anywhere in the file, exported or not, including inside the component. They go in `card.types.ts`. Enums aren't flagged.                                                            |
+| `no-helpers-in-components` | The file holds its component and nothing else. Constants go in `card.constants.ts`, functions in `card.utils.ts` and other components in their own folders. It exports nothing but the component.                 |
+| `memo-default-export`      | The file ends with `export default memo(Card)`, wrapping the component named after the file.                                                                                                                      |
+| `destructure-props`        | The component takes `props` and reads it through `const { … } = props` on its first line, followed by a blank line. No destructuring in the parameters, `props.x` or `{...props}`. Components without props pass. |
+| `component-index`          | The folder's `index.ts` re-exports the component by name: `export { default as Card } from './card'`.                                                                                                             |
+| `max-component-lines`      | The file is at most 250 lines, counting every line like your editor does. Split a longer one into components in a `components` folder next to it. Reported at line 1.                                             |
+
+### Every file
+
+| Rule                       | What it checks                                                                                                                                                                                                                                                                            |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `kebab-case-files`         | Folder and file names are kebab-case, like `top-bar/top-bar.types.ts`. Next.js route folders like `(group)`, `[id]`, `[...slug]` and `@slot` pass when the name inside is kebab-case.                                                                                                     |
+| `no-parent-imports`        | No `../` in imports, re-exports or `import()`. Use the project's alias, like `@web/…`, or `./` for the same folder and below.                                                                                                                                                             |
+| `import-component-folders` | Imports point at a component's folder, like `./components/card`, not at files inside it like `card/card`, `card/card.types` or `card/index`. A component can import its parent's own files, like `share-previews.utils`, since going through the parent's `index.ts` would import itself. |
+| `blank-line-before-return` | A `return` that isn't first in its block has a blank line above it, or above the comment directly over it.                                                                                                                                                                                |
+| `no-void`                  | No `void` operator. Call the function as a plain statement, or give an arrow function a block body.                                                                                                                                                                                       |
+| `no-form-event`            | No `FormEvent`, which React's types deprecate. Use the element's own event type, like `SubmitEvent<HTMLFormElement>`.                                                                                                                                                                     |
+| `no-inline-handler-bodies` | A function written in a JSX prop is one expression, like `onClick={() => setOpen(false)}`, never a `{ … }` body. Anything bigger is a named `handle…` function.                                                                                                                           |
+| `map-items-as-components`  | An HTML element rendered in a `.map()` has no inline handlers of its own: make the item a sub-component. Handlers passed to components, like `<Row onSelect={…} />`, pass.                                                                                                                |
+
 ## Use it in a workflow
 
 Add a step after the checkout, with the folder your components live in:
@@ -68,19 +99,14 @@ same bundled script the action runs, with no dependencies of its own.
 The lockfile pins the commit you installed, while `@v1` in a workflow follows the latest v1
 release. Run `pnpm update @alexsilver8/cleaner` after a release to pick up new rules locally.
 
-## Rules
-
-| Rule                     | What it checks                                                                                                                             |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `no-types-in-components` | A component file (a `.tsx` file named after its folder, like `card/card.tsx`) declares no interfaces or types. They go in `card.types.ts`. |
-| `no-parent-imports`      | A `.ts` or `.tsx` file doesn't import or re-export from `../`. Use a path alias from `tsconfig.json` instead; `./` is fine.                |
-
 ## Adding a rule
 
 1. Add it to `RULES` in [`src/rules.mjs`](src/rules.mjs): an id, a one-line description and fix,
    which files it applies to, and a check that returns each problem's node and a short message.
 2. Add tests in `tests/rules.test.ts`.
-3. Run `pnpm build` and commit `dist/cleaner.cjs` with the change. Other repositories run the
+3. Add a row for it to [What it checks](#what-it-checks), under the files it applies to: what it
+   flags and what it lets through.
+4. Run `pnpm build` and commit `dist/cleaner.cjs` with the change. Other repositories run the
    committed bundle, and CI fails if it doesn't match `src/`.
 
 A new rule can fail repositories that pass today as soon as it's released to `@v1`. Fix them
